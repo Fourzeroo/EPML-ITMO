@@ -1,32 +1,22 @@
+"""Configuration for Titanic Classifier project."""
+
 from pathlib import Path
 
-from dotenv import load_dotenv
-from loguru import logger
+# Project paths
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+MODELS_DIR = PROJECT_ROOT / "models"
+MLFLOW_DIR = PROJECT_ROOT / "mlflow"
 
-# Load environment variables from .env file if it exists
-load_dotenv()
+# MLflow configuration
+MLFLOW_TRACKING_URI = f"sqlite:///{MLFLOW_DIR}/mlflow.db"
+MLFLOW_ARTIFACT_LOCATION = str(MLFLOW_DIR / "artifacts")
+MLFLOW_EXPERIMENT_NAME = "titanic-classification"
 
-# Paths
-PROJ_ROOT = Path(__file__).resolve().parents[1]
-logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
+# Data paths
+RAW_DATA_PATH = DATA_DIR / "raw" / "train.csv"
+PROCESSED_DATA_PATH = DATA_DIR / "processed" / "train_processed.csv"
 
-DATA_DIR = PROJ_ROOT / "data"
-RAW_DATA_DIR = DATA_DIR / "raw"
-INTERIM_DATA_DIR = DATA_DIR / "interim"
-PROCESSED_DATA_DIR = DATA_DIR / "processed"
-EXTERNAL_DATA_DIR = DATA_DIR / "external"
-
-MODELS_DIR = PROJ_ROOT / "models"
-
-REPORTS_DIR = PROJ_ROOT / "reports"
-FIGURES_DIR = REPORTS_DIR / "figures"
-
-# If tqdm is installed, configure loguru with tqdm.write
-# https://github.com/Delgan/loguru/issues/135
-try:
-    from tqdm import tqdm
-
-    logger.remove(0)
-    logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True)
-except ModuleNotFoundError:
-    pass
+# Model parameters
+RANDOM_STATE = 42
+TEST_SIZE = 0.2

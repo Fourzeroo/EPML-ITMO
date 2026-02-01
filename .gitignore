@@ -192,6 +192,7 @@ cython_debug/
 
 # MLflow
 mlruns/
+mlflow/
 
 # Ruff stuff:
 .ruff_cache/
