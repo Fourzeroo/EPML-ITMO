@@ -1,0 +1,64 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "titanic_classifier"
+version = "0.0.1"
+description = "ML project for Titanic survival prediction with MLOps workflow"
+authors = [
+  { name = "Vladimir Kubasov" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "ipython",
+    "jupyterlab",
+    "loguru",
+    "matplotlib",
+    "mkdocs",
+    "notebook",
+    "numpy",
+    "pandas",
+    "pip",
+    "pytest",
+    "python-dotenv",
+    "ruff",
+    "scikit-learn",
+    "tqdm",
+    "typer",
+]
+requires-python = ">=3.10"
+
+
+[tool.ruff]
+line-length = 99
+src = ["titanic_classifier"]
+include = ["pyproject.toml", "titanic_classifier/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["titanic_classifier"]
+force-sort-within-sections = true
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.5.1"
+black = "^26.1.0"
+isort = "^7.0.0"
+mypy = "^1.19.1"
+bandit = "^1.9.3"
+types-pyyaml = "^6.0.12.20250915"
+pandas-stubs = "^2.3.3.260113"
+
+
+# ============== Bandit Configuration ==============
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build"]
+skips = ["B101"]
