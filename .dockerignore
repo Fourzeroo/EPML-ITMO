@@ -29,11 +29,11 @@ htmlcov/
 
 # Data and Models (монтируются как volumes)
 data/
+!data/raw/*.dvc
 models/
 
 # MLOps
 mlruns/
-.dvc/
 
 # Docs
 docs/
