@@ -1,9 +1,10 @@
-"""Model evaluation pipeline stage."""
+"""Model evaluation pipeline stage with Hydra."""
 
 import json
 from pathlib import Path
 import pickle  # nosec B403
 
+from hydra import compose, initialize_config_dir
 from loguru import logger
 import pandas as pd
 from sklearn.metrics import (
@@ -15,58 +16,49 @@ from sklearn.metrics import (
 )
 
 
-def load_model(model_path: str):
-    """Load trained model from pickle file."""
-    with open(model_path, "rb") as f:
-        return pickle.load(f)  # nosec B301
-
-
-def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
-    """Evaluate model and return metrics."""
-    predictions = model.predict(X_test)
-    probabilities = model.predict_proba(X_test)[:, 1]
-
-    metrics = {
-        "accuracy": float(accuracy_score(y_test, predictions)),
-        "precision": float(precision_score(y_test, predictions)),
-        "recall": float(recall_score(y_test, predictions)),
-        "f1_score": float(f1_score(y_test, predictions)),
-        "roc_auc": float(roc_auc_score(y_test, probabilities)),
-    }
-
-    return metrics
-
-
 def main():
     """Main function for model evaluation."""
-    # Paths
-    model_path = "models/model.pkl"
-    X_test_path = "data/processed/X_test.csv"
-    y_test_path = "data/processed/y_test.csv"
-    metrics_path = Path("reports/metrics.json")
+    # Initialize Hydra with absolute path to configs
+    config_dir = str(Path.cwd() / "configs")
+
+    with initialize_config_dir(version_base=None, config_dir=config_dir):
+        cfg = compose(config_name="config")
 
     # Load model
+    model_path = cfg.train.model_path
     logger.info(f"Loading model from {model_path}")
-    model = load_model(model_path)
+    with open(model_path, "rb") as f:
+        model = pickle.load(f)  # nosec B301
 
     # Load test data
     logger.info("Loading test data")
-    X_test = pd.read_csv(X_test_path)
-    y_test = pd.read_csv(y_test_path).squeeze()
+    X_test = pd.read_csv("data/processed/X_test.csv")
+    y_test = pd.read_csv("data/processed/y_test.csv").squeeze()
 
-    # Evaluate
+    # Predict
     logger.info("Evaluating model")
-    metrics = evaluate_model(model, X_test, y_test)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
 
-    # Print metrics
+    # Calculate metrics
+    metrics = {
+        "accuracy": float(accuracy_score(y_test, y_pred)),
+        "precision": float(precision_score(y_test, y_pred)),
+        "recall": float(recall_score(y_test, y_pred)),
+        "f1_score": float(f1_score(y_test, y_pred)),
+    }
+    if y_proba is not None:
+        metrics["roc_auc"] = float(roc_auc_score(y_test, y_proba))
+
+    # Log metrics
     for name, value in metrics.items():
         logger.info(f"{name}: {value:.4f}")
 
     # Save metrics
+    metrics_path = Path("reports/metrics.json")
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
-
     logger.success(f"Metrics saved to {metrics_path}")
 
 

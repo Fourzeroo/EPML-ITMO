@@ -13,8 +13,8 @@ stages:
       size: 50931
     - path: titanic_classifier/pipeline/prepare.py
       hash: md5
-      md5: 163b6019071737b08d8d6902b2ec5d84
-      size: 1568
+      md5: 49da9573d232c15e328b4a728a58491d
+      size: 1427
     outs:
     - path: data/processed/train_processed.csv
       hash: md5
@@ -25,8 +25,8 @@ stages:
     deps:
     - path: configs/model/
       hash: md5
-      md5: 5e963f5d37c9d65997125a1720dc6f58.dir
-      size: 456
+      md5: 9a648a0cc0c7d4ad5a1c40f5a34b6966.dir
+      size: 350
       nfiles: 3
     - path: configs/train/default.yaml
       hash: md5
@@ -38,8 +38,8 @@ stages:
       size: 16459
     - path: titanic_classifier/pipeline/train.py
       hash: md5
-      md5: e35f4965fb8fb2c2e58f9ea136ce3768
-      size: 3115
+      md5: 3ec07d14bba6b62b8496cb727a1039f5
+      size: 2004
     outs:
     - path: data/processed/X_test.csv
       hash: md5
@@ -70,8 +70,8 @@ stages:
       size: 1396967
     - path: titanic_classifier/pipeline/evaluate.py
       hash: md5
-      md5: e65fde7e2943e7d335f3fa72271c719c
-      size: 1944
+      md5: 81a3af820b3be642b6b85b0d9fd20259
+      size: 1934
     outs:
     - path: reports/metrics.json
       hash: md5

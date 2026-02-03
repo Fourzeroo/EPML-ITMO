@@ -1,102 +1,66 @@
-"""Model training pipeline stage."""
+"""Model training pipeline stage with Hydra."""
 
 from pathlib import Path
 import pickle  # nosec B403
 import sys
 
+from hydra import compose, initialize_config_dir
+from hydra.utils import instantiate
 from loguru import logger
 import pandas as pd
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-import yaml
 
 
-def parse_args() -> dict:
-    """Parse command line arguments in key=value format."""
-    args = {}
+def get_overrides():
+    """Get Hydra overrides from command line arguments."""
+    overrides = []
     for arg in sys.argv[1:]:
-        if "=" in arg:
-            key, value = arg.split("=", 1)
-            args[key] = value
-    return args
-
-
-def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
-
-
-def get_model(model_config: dict):
-    """Create model instance from config."""
-    model_name = model_config.get("name", "RandomForest")
-
-    if model_name == "RandomForest":
-        return RandomForestClassifier(
-            n_estimators=model_config.get("n_estimators", 100),
-            max_depth=model_config.get("max_depth", 10),
-            min_samples_split=model_config.get("min_samples_split", 2),
-            min_samples_leaf=model_config.get("min_samples_leaf", 1),
-            random_state=42,
-        )
-    elif model_name == "GradientBoosting":
-        return GradientBoostingClassifier(
-            n_estimators=model_config.get("n_estimators", 100),
-            max_depth=model_config.get("max_depth", 3),
-            learning_rate=model_config.get("learning_rate", 0.1),
-            random_state=42,
-        )
-    elif model_name == "LogisticRegression":
-        return LogisticRegression(
-            C=model_config.get("C", 1.0),
-            max_iter=model_config.get("max_iter", 1000),
-            random_state=42,
-        )
-    else:
-        raise ValueError(f"Unknown model: {model_name}")
+        if "=" in arg and not arg.startswith("-"):
+            overrides.append(arg)
+    return overrides
 
 
 def main():
     """Main function for model training."""
-    # Parse command line args
-    args = parse_args()
-    model_name = args.get("model", "random_forest")
+    # Initialize Hydra with absolute path to configs
+    config_dir = str(Path.cwd() / "configs")
+    overrides = get_overrides()
 
-    # Load configs
-    data_config = load_config("configs/data/default.yaml")
-    train_config = load_config("configs/train/default.yaml")
-    model_config = load_config(f"configs/model/{model_name}.yaml")
+    with initialize_config_dir(version_base=None, config_dir=config_dir):
+        cfg = compose(config_name="config", overrides=overrides)
+
+    # Get model name for logging (from _target_)
+    model_name = cfg.model._target_.split(".")[-1]
+    logger.info(f"Config loaded: model={model_name}")
 
     # Load processed data
-    data_path = data_config["processed_path"]
+    data_path = cfg.data.processed_path
     logger.info(f"Loading data from {data_path}")
     df = pd.read_csv(data_path)
 
     # Split features and target
-    features = data_config["features"]
-    target = data_config["target"]
-
+    features = list(cfg.data.features)
+    target = cfg.data.target
     X = df[features]
     y = df[target]
 
     # Train/test split
-    test_size = data_config.get("test_size", 0.2)
+    test_size = cfg.data.test_size
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=42
+        X, y, test_size=test_size, random_state=cfg.random_state
     )
-
     logger.info(f"Train size: {len(X_train)}, Test size: {len(X_test)}")
 
-    # Create and train model
-    model = get_model(model_config)
-    logger.info(f"Training {model_config['name']}...")
+    # Create model using Hydra instantiate
+    model = instantiate(cfg.model)
+    logger.info(f"Training {model_name}...")
+
+    # Train model
     model.fit(X_train, y_train)
 
     # Save model
-    model_path = Path(train_config["model_path"])
+    model_path = Path(cfg.train.model_path)
     model_path.parent.mkdir(parents=True, exist_ok=True)
-
     with open(model_path, "wb") as f:
         pickle.dump(model, f)
     logger.success(f"Model saved to {model_path}")
