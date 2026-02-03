@@ -1,0 +1,79 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m titanic_classifier.pipeline.prepare
+    deps:
+    - path: configs/data/default.yaml
+      hash: md5
+      md5: a9307de72ae6289e4d68e331d8f44aa2
+      size: 191
+    - path: data/raw/train.csv
+      hash: md5
+      md5: cc99db3c3592655a7a44c61350201598
+      size: 50931
+    - path: titanic_classifier/pipeline/prepare.py
+      hash: md5
+      md5: 163b6019071737b08d8d6902b2ec5d84
+      size: 1568
+    outs:
+    - path: data/processed/train_processed.csv
+      hash: md5
+      md5: 644b01528e7d896abff3eab148ca90a9
+      size: 16459
+  train:
+    cmd: python -m titanic_classifier.pipeline.train
+    deps:
+    - path: configs/model/
+      hash: md5
+      md5: 5e963f5d37c9d65997125a1720dc6f58.dir
+      size: 456
+      nfiles: 3
+    - path: configs/train/default.yaml
+      hash: md5
+      md5: a5f6d637f94a3ca6afb7813da97a3c8f
+      size: 70
+    - path: data/processed/train_processed.csv
+      hash: md5
+      md5: 644b01528e7d896abff3eab148ca90a9
+      size: 16459
+    - path: titanic_classifier/pipeline/train.py
+      hash: md5
+      md5: e35f4965fb8fb2c2e58f9ea136ce3768
+      size: 3115
+    outs:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 9d2c6c62845df4053e874c61d04f1c56
+      size: 3096
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 64edeb15e7c99e74dd9ec193996e17e8
+      size: 295
+    - path: models/model.pkl
+      hash: md5
+      md5: 8d62bd065845d22c4888d2c9320d082d
+      size: 1396967
+  evaluate:
+    cmd: python -m titanic_classifier.pipeline.evaluate
+    deps:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 9d2c6c62845df4053e874c61d04f1c56
+      size: 3096
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 64edeb15e7c99e74dd9ec193996e17e8
+      size: 295
+    - path: models/model.pkl
+      hash: md5
+      md5: 8d62bd065845d22c4888d2c9320d082d
+      size: 1396967
+    - path: titanic_classifier/pipeline/evaluate.py
+      hash: md5
+      md5: e65fde7e2943e7d335f3fa72271c719c
+      size: 1944
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: d34d3ac8ce586ef19e354ec4ae1e6228
+      size: 170

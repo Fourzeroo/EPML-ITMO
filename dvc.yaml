@@ -1,0 +1,32 @@
+stages:
+  prepare:
+    cmd: python -m titanic_classifier.pipeline.prepare
+    deps:
+      - titanic_classifier/pipeline/prepare.py
+      - data/raw/train.csv
+      - configs/data/default.yaml
+    outs:
+      - data/processed/train_processed.csv
+
+  train:
+    cmd: python -m titanic_classifier.pipeline.train
+    deps:
+      - titanic_classifier/pipeline/train.py
+      - data/processed/train_processed.csv
+      - configs/model/
+      - configs/train/default.yaml
+    outs:
+      - models/model.pkl
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+
+  evaluate:
+    cmd: python -m titanic_classifier.pipeline.evaluate
+    deps:
+      - titanic_classifier/pipeline/evaluate.py
+      - models/model.pkl
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+    metrics:
+      - reports/metrics.json:
+          cache: false

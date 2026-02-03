@@ -1,0 +1,8 @@
+defaults:
+  - data: default
+  - model: random_forest
+  - train: default
+  - _self_
+
+experiment_name: titanic-pipeline
+random_state: 42

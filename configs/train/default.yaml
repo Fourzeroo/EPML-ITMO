@@ -1,0 +1,4 @@
+cv_folds: 5
+scoring: f1
+save_model: true
+model_path: models/model.pkl
