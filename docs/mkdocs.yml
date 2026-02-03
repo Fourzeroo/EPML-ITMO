@@ -1,4 +1,41 @@
 site_name: Titanic Classifier
-#
+site_description: ML project for Titanic survival prediction with MLOps workflow
 site_author: Vladimir Kubasov
-#
+site_url: https://fourzeroo.github.io/EPML-ITMO/
+
+repo_name: Fourzeroo/EPML-ITMO
+repo_url: https://github.com/Fourzeroo/EPML-ITMO
+
+theme:
+  name: material
+  language: ru
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.suggest
+
+nav:
+  - Главная: index.md
+  - Начало работы: getting-started.md
+  - Руководства:
+    - Установка: guides/installation.md
+    - Использование: guides/usage.md
+    - Развертывание: guides/deployment.md
+  - API:
+    - Модели: api/models.md
+    - Утилиты: api/utils.md
+  - Эксперименты:
+    - Отчёт: experiments/report.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - tables

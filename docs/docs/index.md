@@ -1,9 +1,28 @@
-# Titanic Classifier documentation!
+# Titanic Classifier
 
-## Description
+ML проект для предсказания выживания пассажиров Титаника с полным MLOps workflow.
 
-ML project for Titanic survival prediction with MLOps workflow
+## Возможности
 
-## Commands
+- **Версионирование данных** — DVC для контроля версий датасетов
+- **Трекинг экспериментов** — MLflow и ClearML для логирования
+- **Автоматизация** — DVC Pipelines + Hydra для конфигураций
+- **Качество кода** — Pre-commit hooks, Ruff, MyPy
 
-The Makefile contains the central entry points for common tasks related to this project.
+## Быстрый старт
+```bash
+git clone https://github.com/Fourzeroo/EPML-ITMO.git
+cd EPML-ITMO
+poetry install
+poetry run dvc pull
+poetry run dvc repro
+```
+
+## Технологии
+
+| Категория | Инструменты |
+|-----------|-------------|
+| ML | scikit-learn, pandas, numpy |
+| MLOps | DVC, MLflow, ClearML, Hydra |
+| Качество кода | Ruff, MyPy, Bandit, pre-commit |
+| Документация | MkDocs Material |

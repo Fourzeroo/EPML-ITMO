@@ -63,6 +63,7 @@ pandas-stubs = "^2.3.3.260113"
 
 
 # ============== MyPy Configuration ==============
+mkdocs-material = "^9.7.1"
 [tool.mypy]
 ignore_missing_imports = false
 
