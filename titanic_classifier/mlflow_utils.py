@@ -1,9 +1,6 @@
-"""MLflow utilities: decorators, context managers, and helper functions."""
-
 from contextlib import contextmanager
 import functools
 import time
-from typing import Any, Callable, Dict, Optional
 
 from loguru import logger
 import mlflow
@@ -16,8 +13,7 @@ from titanic_classifier.config import (
 )
 
 
-def setup_mlflow(experiment_name: Optional[str] = None) -> None:
-    """Initialize MLflow with configured settings."""
+def setup_mlflow(experiment_name=None):
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
     exp_name = experiment_name or MLFLOW_EXPERIMENT_NAME
@@ -32,40 +28,22 @@ def setup_mlflow(experiment_name: Optional[str] = None) -> None:
     logger.info(f"MLflow configured: experiment='{exp_name}'")
 
 
-def log_experiment(
-    run_name: Optional[str] = None,
-    tags: Optional[Dict[str, str]] = None,
-) -> Callable:
-    """Decorator for automatic MLflow logging.
-
-    Usage:
-        @log_experiment(run_name="my_experiment")
-        def train_model(params):
-            ...
-            return metrics
-    """
-
-    def decorator(func: Callable) -> Callable:
+def log_experiment(run_name=None, tags=None):
+    def decorator(func):
         @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args, **kwargs):
             setup_mlflow()
 
             with mlflow.start_run(run_name=run_name):
                 if tags:
                     mlflow.set_tags(tags)
 
-                # Log start time
                 start_time = time.time()
-
-                # Execute function
                 result = func(*args, **kwargs)
-
-                # Log duration
                 duration = time.time() - start_time
                 mlflow.log_metric("duration_seconds", duration)
 
                 logger.info(f"Experiment '{run_name}' completed in {duration:.2f}s")
-
                 return result
 
         return wrapper
@@ -74,18 +52,7 @@ def log_experiment(
 
 
 @contextmanager
-def experiment_context(
-    run_name: str,
-    params: Optional[Dict[str, Any]] = None,
-    tags: Optional[Dict[str, str]] = None,
-):
-    """Context manager for MLflow experiments.
-
-    Usage:
-        with experiment_context("my_run", params={"lr": 0.01}) as run:
-            model.fit(X, y)
-            mlflow.log_metric("accuracy", 0.95)
-    """
+def experiment_context(run_name, params=None, tags=None):
     setup_mlflow()
 
     with mlflow.start_run(run_name=run_name) as run:
@@ -104,13 +71,7 @@ def experiment_context(
         logger.info(f"Experiment '{run_name}' completed in {duration:.2f}s")
 
 
-def log_model_metrics(
-    y_true,
-    y_pred,
-    y_proba=None,
-    prefix: str = "",
-) -> Dict[str, float]:
-    """Log classification metrics to MLflow."""
+def log_model_metrics(y_true, y_pred, y_proba=None, prefix=""):
     from sklearn.metrics import (
         accuracy_score,
         f1_score,
@@ -129,7 +90,6 @@ def log_model_metrics(
     if y_proba is not None:
         metrics["roc_auc"] = roc_auc_score(y_true, y_proba)
 
-    # Add prefix and log
     for name, value in metrics.items():
         metric_name = f"{prefix}_{name}" if prefix else name
         mlflow.log_metric(metric_name, value)
@@ -137,12 +97,7 @@ def log_model_metrics(
     return metrics
 
 
-def get_best_run(
-    experiment_name: Optional[str] = None,
-    metric: str = "f1_score",
-    ascending: bool = False,
-) -> Optional[Dict]:
-    """Get the best run from an experiment."""
+def get_best_run(experiment_name=None, metric="f1_score", ascending=False):
     setup_mlflow(experiment_name)
 
     experiment = mlflow.get_experiment_by_name(

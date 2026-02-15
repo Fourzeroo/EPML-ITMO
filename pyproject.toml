@@ -59,7 +59,6 @@ types-pyyaml = "^6.0.12.20250915"
 pandas-stubs = "^2.3.3.260113"
 
 
-# ============== MyPy Configuration ==============
 [tool.mypy]
 ignore_missing_imports = false
 
@@ -67,7 +66,6 @@ ignore_missing_imports = false
 module = ["mlflow", "mlflow.*"]
 ignore_missing_imports = true
 
-# ============== Bandit Configuration ==============
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "build"]
 skips = ["B101"]
