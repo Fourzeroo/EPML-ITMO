@@ -58,7 +58,6 @@ types-pyyaml = "^6.0.12.20250915"
 pandas-stubs = "^2.3.3.260113"
 
 
-# ============== Bandit Configuration ==============
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "build"]
 skips = ["B101"]
