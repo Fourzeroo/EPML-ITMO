@@ -1,5 +1,3 @@
-"""Data preparation pipeline stage."""
-
 from pathlib import Path
 
 from loguru import logger
@@ -8,14 +6,12 @@ from sklearn.preprocessing import LabelEncoder
 import yaml
 
 
-def load_config(config_path: str = "configs/data/default.yaml") -> dict:
-    """Load configuration from YAML file."""
+def load_config(config_path="configs/data/default.yaml"):
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
 
-def prepare_data(config: dict) -> pd.DataFrame:
-    """Load and prepare Titanic data."""
+def prepare_data(config):
     raw_path = config["raw_path"]
     features = config["features"]
     target = config["target"]
@@ -23,17 +19,14 @@ def prepare_data(config: dict) -> pd.DataFrame:
     logger.info(f"Loading data from {raw_path}")
     df = pd.read_csv(raw_path)
 
-    # Select features and target
     columns = features + [target]
     df = df[columns]
 
     logger.info(f"Original shape: {df.shape}")
 
-    # Drop rows with missing values
     df = df.dropna()
     logger.info(f"Shape after dropping NaN: {df.shape}")
 
-    # Encode categorical features
     le_sex = LabelEncoder()
     le_embarked = LabelEncoder()
 
@@ -46,13 +39,10 @@ def prepare_data(config: dict) -> pd.DataFrame:
 
 
 def main():
-    """Main function for data preparation."""
     config = load_config()
 
-    # Prepare data
     df = prepare_data(config)
 
-    # Save processed data
     output_path = Path(config["processed_path"])
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

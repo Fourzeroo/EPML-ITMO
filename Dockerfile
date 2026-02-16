@@ -1,9 +1,3 @@
-# =====================================================
-# Titanic Classifier - Production Docker Image
-# =====================================================
-# Multi-stage build for optimized image size
-
-# Stage 1: Builder
 FROM python:3.11-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -29,11 +23,8 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock LICENSE ./
 
-RUN poetry install --no-root --only main || \
-    poetry install --no-root --only main || \
-    poetry install --no-root --only main
+RUN poetry install --no-root --only main
 
-# Stage 2: Runtime
 FROM python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -62,7 +53,3 @@ RUN mkdir -p data/raw data/processed models mlruns logs \
 USER appuser
 
 CMD ["python", "-m", "titanic_classifier"]
-
-LABEL maintainer="Vladimir" \
-      version="0.1.0" \
-      description="Titanic survival prediction classifier with DVC and MLflow"

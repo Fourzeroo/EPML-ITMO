@@ -1,5 +1,3 @@
-"""Demo: using decorators and context managers for MLflow logging."""
-
 import mlflow
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -17,7 +15,6 @@ from titanic_classifier.mlflow_utils import (
 
 
 def load_data():
-    """Load Titanic data."""
     df = pd.read_csv(RAW_DATA_PATH)
     features = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"]
     df = df[features + ["Survived"]].dropna()
@@ -30,12 +27,9 @@ def load_data():
     return train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE)
 
 
-# =============================================================
-# Example 1: Using @log_experiment decorator
-# =============================================================
+# Пример 1: декоратор
 @log_experiment(run_name="decorator_example", tags={"demo": "decorator"})
 def train_with_decorator():
-    """Train model using decorator for automatic logging."""
     X_train, X_test, y_train, y_test = load_data()
 
     model = RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE)
@@ -52,11 +46,8 @@ def train_with_decorator():
     return metrics
 
 
-# =============================================================
-# Example 2: Using context manager
-# =============================================================
+# Пример 2: контекстный менеджер
 def train_with_context_manager():
-    """Train model using context manager."""
     X_train, X_test, y_train, y_test = load_data()
 
     params = {"n_estimators": 150, "max_depth": 8}
@@ -74,11 +65,8 @@ def train_with_context_manager():
         print(f"[Context Manager] Accuracy: {metrics['accuracy']:.4f}")
 
 
-# =============================================================
-# Example 3: Using get_best_run utility
-# =============================================================
+# Пример 3: поиск лучшего рана
 def show_best_run():
-    """Show best run from experiments."""
     setup_mlflow("titanic-experiments")
 
     best = get_best_run(metric="f1_score")

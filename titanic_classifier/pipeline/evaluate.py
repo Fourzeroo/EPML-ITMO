@@ -1,5 +1,3 @@
-"""Model evaluation pipeline stage."""
-
 import json
 from pathlib import Path
 import pickle  # nosec B403
@@ -15,14 +13,12 @@ from sklearn.metrics import (
 )
 
 
-def load_model(model_path: str):
-    """Load trained model from pickle file."""
+def load_model(model_path):
     with open(model_path, "rb") as f:
         return pickle.load(f)  # nosec B301
 
 
-def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
-    """Evaluate model and return metrics."""
+def evaluate_model(model, X_test, y_test):
     predictions = model.predict(X_test)
     probabilities = model.predict_proba(X_test)[:, 1]
 
@@ -38,31 +34,24 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
 
 
 def main():
-    """Main function for model evaluation."""
-    # Paths
     model_path = "models/model.pkl"
     X_test_path = "data/processed/X_test.csv"
     y_test_path = "data/processed/y_test.csv"
     metrics_path = Path("reports/metrics.json")
 
-    # Load model
     logger.info(f"Loading model from {model_path}")
     model = load_model(model_path)
 
-    # Load test data
     logger.info("Loading test data")
     X_test = pd.read_csv(X_test_path)
     y_test = pd.read_csv(y_test_path).squeeze()
 
-    # Evaluate
     logger.info("Evaluating model")
     metrics = evaluate_model(model, X_test, y_test)
 
-    # Print metrics
     for name, value in metrics.items():
         logger.info(f"{name}: {value:.4f}")
 
-    # Save metrics
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
