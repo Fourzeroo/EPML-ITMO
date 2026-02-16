@@ -1,5 +1,3 @@
-"""Training script with MLflow tracking."""
-
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -10,17 +8,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
 
-def load_and_prepare_data(path: str = "data/raw/train.csv"):
-    """Load and prepare Titanic data."""
+def load_and_prepare_data(path="data/raw/train.csv"):
     df = pd.read_csv(path)
 
-    # Select features
     features = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"]
     target = "Survived"
 
     df = df[features + [target]].dropna()
 
-    # Encode categorical
     le_sex = LabelEncoder()
     le_embarked = LabelEncoder()
     df["Sex"] = le_sex.fit_transform(df["Sex"])
@@ -32,30 +27,23 @@ def load_and_prepare_data(path: str = "data/raw/train.csv"):
     return train_test_split(X, y, test_size=0.2, random_state=42)
 
 
-def train_and_log(model_name: str, model, X_train, X_test, y_train, y_test):
-    """Train model and log to MLflow."""
-
+def train_and_log(model_name, model, X_train, X_test, y_train, y_test):
     with mlflow.start_run(run_name=model_name):
-        # Train
         model.fit(X_train, y_train)
         predictions = model.predict(X_test)
 
-        # Metrics
         accuracy = accuracy_score(y_test, predictions)
         precision = precision_score(y_test, predictions)
         recall = recall_score(y_test, predictions)
         f1 = f1_score(y_test, predictions)
 
-        # Log parameters
         mlflow.log_params(model.get_params())
 
-        # Log metrics
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("precision", precision)
         mlflow.log_metric("recall", recall)
         mlflow.log_metric("f1_score", f1)
 
-        # Log model
         mlflow.sklearn.log_model(model, "model")
 
         print(f"{model_name}: accuracy={accuracy:.4f}, f1={f1:.4f}")
@@ -64,14 +52,11 @@ def train_and_log(model_name: str, model, X_train, X_test, y_train, y_test):
 
 
 if __name__ == "__main__":
-    # Set experiment
-    mlflow.set_experiment("titanic-classification")
+    mlflow.set_experiment("titanic-classification")  # type: ignore[attr-defined]
 
-    # Load data
     X_train, X_test, y_train, y_test = load_and_prepare_data()
     print(f"Train size: {len(X_train)}, Test size: {len(X_test)}")
 
-    # Train multiple models
     models = [
         ("RandomForest_n50", RandomForestClassifier(n_estimators=50, random_state=42)),
         ("RandomForest_n100", RandomForestClassifier(n_estimators=100, random_state=42)),
