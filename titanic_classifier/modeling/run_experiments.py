@@ -1,5 +1,3 @@
-"""Run 15+ experiments with different algorithms and hyperparameters."""
-
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -23,7 +21,6 @@ from titanic_classifier.mlflow_utils import (
 
 
 def load_and_prepare_data():
-    """Load and prepare Titanic data."""
     df = pd.read_csv(RAW_DATA_PATH)
 
     features = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"]
@@ -42,11 +39,9 @@ def load_and_prepare_data():
     return train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
 
-def run_experiment(name: str, model, X_train, X_test, y_train, y_test, scale=False):
-    """Run single experiment with logging."""
+def run_experiment(name, model, X_train, X_test, y_train, y_test, scale=False):
 
     with experiment_context(name, tags={"model_type": type(model).__name__}) as _run:
-        # Scale if needed
         if scale:
             scaler = StandardScaler()
             X_train_proc = scaler.fit_transform(X_train)
@@ -55,23 +50,18 @@ def run_experiment(name: str, model, X_train, X_test, y_train, y_test, scale=Fal
             X_train_proc = X_train
             X_test_proc = X_test
 
-        # Log parameters
         mlflow.log_params(model.get_params())
         mlflow.log_param("scaling", scale)
 
-        # Train
         model.fit(X_train_proc, y_train)
 
-        # Predict
         y_pred = model.predict(X_test_proc)
         y_proba = None
         if hasattr(model, "predict_proba"):
             y_proba = model.predict_proba(X_test_proc)[:, 1]
 
-        # Log metrics
         metrics = log_model_metrics(y_test, y_pred, y_proba)
 
-        # Log model
         mlflow.sklearn.log_model(model, "model")
 
         print(f"{name}: accuracy={metrics['accuracy']:.4f}, f1={metrics['f1_score']:.4f}")
@@ -80,7 +70,6 @@ def run_experiment(name: str, model, X_train, X_test, y_train, y_test, scale=Fal
 
 
 def main():
-    """Run all experiments."""
     setup_mlflow("titanic-experiments")
 
     print("Loading data...")
@@ -91,35 +80,23 @@ def main():
     print("="*60 + "\n")
 
     experiments = [
-        # Random Forest variations (5 experiments)
         ("RF_n50_d5", RandomForestClassifier(n_estimators=50, max_depth=5, random_state=RANDOM_STATE)),
         ("RF_n100_d5", RandomForestClassifier(n_estimators=100, max_depth=5, random_state=RANDOM_STATE)),
         ("RF_n100_d10", RandomForestClassifier(n_estimators=100, max_depth=10, random_state=RANDOM_STATE)),
         ("RF_n200_d10", RandomForestClassifier(n_estimators=200, max_depth=10, random_state=RANDOM_STATE)),
         ("RF_n200_d15", RandomForestClassifier(n_estimators=200, max_depth=15, random_state=RANDOM_STATE)),
-
-        # Gradient Boosting variations (3 experiments)
         ("GB_n50_lr01", GradientBoostingClassifier(n_estimators=50, learning_rate=0.1, random_state=RANDOM_STATE)),
         ("GB_n100_lr01", GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=RANDOM_STATE)),
         ("GB_n100_lr05", GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, random_state=RANDOM_STATE)),
-
-        # Logistic Regression variations (2 experiments)
         ("LR_C1", LogisticRegression(C=1.0, max_iter=1000, random_state=RANDOM_STATE)),
         ("LR_C01", LogisticRegression(C=0.1, max_iter=1000, random_state=RANDOM_STATE)),
-
-        # Decision Tree variations (2 experiments)
         ("DT_d5", DecisionTreeClassifier(max_depth=5, random_state=RANDOM_STATE)),
         ("DT_d10", DecisionTreeClassifier(max_depth=10, random_state=RANDOM_STATE)),
-
-        # KNN variations (2 experiments)
         ("KNN_k3", KNeighborsClassifier(n_neighbors=3)),
         ("KNN_k5", KNeighborsClassifier(n_neighbors=5)),
-
-        # AdaBoost (1 experiment)
         ("AdaBoost_n50", AdaBoostClassifier(n_estimators=50, random_state=RANDOM_STATE)),
     ]
 
-    # Models that need scaling
     scale_models = {"LR_C1", "LR_C01", "KNN_k3", "KNN_k5"}
 
     results = []
@@ -128,7 +105,6 @@ def main():
         metrics = run_experiment(name, model, X_train, X_test, y_train, y_test, scale=scale)
         results.append({"name": name, **metrics})
 
-    # Summary
     print("\n" + "="*60)
     print("SUMMARY: Top 5 models by F1-score")
     print("="*60)

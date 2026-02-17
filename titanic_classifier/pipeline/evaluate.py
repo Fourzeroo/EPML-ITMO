@@ -1,5 +1,3 @@
-"""Model evaluation pipeline stage with Hydra."""
-
 import json
 from pathlib import Path
 import pickle  # nosec B403
@@ -17,30 +15,24 @@ from sklearn.metrics import (
 
 
 def main():
-    """Main function for model evaluation."""
-    # Initialize Hydra with absolute path to configs
     config_dir = str(Path.cwd() / "configs")
 
     with initialize_config_dir(version_base=None, config_dir=config_dir):
         cfg = compose(config_name="config")
 
-    # Load model
     model_path = cfg.train.model_path
     logger.info(f"Loading model from {model_path}")
     with open(model_path, "rb") as f:
         model = pickle.load(f)  # nosec B301
 
-    # Load test data
     logger.info("Loading test data")
     X_test = pd.read_csv("data/processed/X_test.csv")
     y_test = pd.read_csv("data/processed/y_test.csv").squeeze()
 
-    # Predict
     logger.info("Evaluating model")
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
 
-    # Calculate metrics
     metrics = {
         "accuracy": float(accuracy_score(y_test, y_pred)),
         "precision": float(precision_score(y_test, y_pred)),
@@ -50,11 +42,9 @@ def main():
     if y_proba is not None:
         metrics["roc_auc"] = float(roc_auc_score(y_test, y_proba))
 
-    # Log metrics
     for name, value in metrics.items():
         logger.info(f"{name}: {value:.4f}")
 
-    # Save metrics
     metrics_path = Path("reports/metrics.json")
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     with open(metrics_path, "w") as f:

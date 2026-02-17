@@ -1,5 +1,3 @@
-"""Generate experiment report with visualizations."""
-
 import json
 from pathlib import Path
 
@@ -7,18 +5,14 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    """Generate report with charts."""
     print("Generating experiment report...")
 
-    # Load metrics
     with open("reports/metrics.json") as f:
         metrics = json.load(f)
     print(f"Loaded metrics: {metrics}")
 
-    # Create output directory
     Path("reports/figures").mkdir(parents=True, exist_ok=True)
 
-    # Create bar chart
     names = list(metrics.keys())
     values = list(metrics.values())
 
@@ -30,7 +24,6 @@ def main():
     plt.ylabel('Score')
     plt.title('Model Evaluation Metrics')
 
-    # Add value labels
     for bar, val in zip(bars, values):
         plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
                  f'{val:.3f}', ha='center', fontsize=11)
@@ -40,7 +33,6 @@ def main():
     plt.close()
     print("Chart saved: reports/figures/metrics_chart.png")
 
-    # Generate Markdown report
     report = """# Автоматический отчёт об экспериментах
 
 ## Метрики модели

@@ -1,12 +1,8 @@
-"""ClearML Pipeline for Titanic Classification."""
-
 from clearml import PipelineController, Task
 
 
 def create_pipeline():
-    """Create and run ClearML pipeline."""
 
-    # Create pipeline controller
     pipe = PipelineController(
         name="Titanic-ML-Pipeline",
         project="Titanic-Classification",
@@ -14,7 +10,6 @@ def create_pipeline():
         add_pipeline_tags=True,
     )
 
-    # Step 1: Data Preparation
     pipe.add_function_step(
         name="prepare_data",
         function=prepare_data,
@@ -22,7 +17,6 @@ def create_pipeline():
         cache_executed_step=True,
     )
 
-    # Step 2: Train Model
     pipe.add_function_step(
         name="train_model",
         function=train_model,
@@ -36,7 +30,6 @@ def create_pipeline():
         cache_executed_step=True,
     )
 
-    # Step 3: Evaluate Model
     pipe.add_function_step(
         name="evaluate_model",
         function=evaluate_model,
@@ -49,14 +42,12 @@ def create_pipeline():
         cache_executed_step=True,
     )
 
-    # Run pipeline
     pipe.start_locally(run_pipeline_steps_locally=True)
 
     print("Pipeline completed! Check ClearML UI for results.")
 
 
 def prepare_data():
-    """Prepare data step."""
     import pandas as pd
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import LabelEncoder
@@ -86,7 +77,6 @@ def prepare_data():
 
 
 def train_model(X_train, X_test, y_train, y_test):
-    """Train model step."""
     from pathlib import Path
 
     import joblib
@@ -107,7 +97,6 @@ def train_model(X_train, X_test, y_train, y_test):
 
 
 def evaluate_model(model, X_test, y_test):
-    """Evaluate model step."""
     from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
     print("Evaluating model...")
@@ -127,7 +116,6 @@ def evaluate_model(model, X_test, y_test):
 
 
 if __name__ == "__main__":
-    # Initialize task for pipeline
     task = Task.init(
         project_name="Titanic-Classification",
         task_name="Pipeline-Controller",
